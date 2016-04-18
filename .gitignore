@@ -1,2 +1,2 @@
-
 *.sw[p|o|n]
+__pycache__
