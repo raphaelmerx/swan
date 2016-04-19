@@ -1,7 +1,14 @@
+from datetime import datetime
+
+import pytz
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
 
 from .models import Chat
+
+
+def get_date_isoformat_from_epoch(epoch):
+    return datetime.fromtimestamp(epoch, pytz.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
 
 
 @api_view(http_method_names=['POST'])
@@ -15,16 +22,19 @@ def telegram_webhook(request):
             token = message_text.strip('/token ')
             chat.api_token = token
             chat.save()
+            chat.send_message('Token saved.')
         elif message_text.startswith('/batch '):
             batch_id = message_text.strip('/batch ')
             # TODO: error message if batch id is not an integer
             chat.batch_id = int(batch_id)
             chat.save()
+            chat.send_message('Batch ID saved.')
     elif 'photo' in update['message']:
+        if not chat.batch_id or not chat.api_token:
+            chat.send_message('Please provide a token and a batch ID before sending form images.')
         # upload the file to Shreddr
         file_contents = Chat.get_file_contents(update)
-        file_name = str(update['message']['date'])
+        file_name = get_date_isoformat_from_epoch(update['message']['date'])
         chat.upload_file(file_contents, file_name=file_name)
-        # TODO: send message asynchronously
         chat.send_message('File successfully uploaded with name "{}".'.format(file_name))
     return HttpResponse()
