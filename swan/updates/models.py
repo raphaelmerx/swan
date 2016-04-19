@@ -30,3 +30,8 @@ class Chat(models.Model):
         files = {'uploaded_file': file_contents}
         response = session.post(batch_files_endpoint, data={'file_name': file_name}, files=files)
         return True
+
+    def send_message(self, text):
+        response = requests.post('https://api.telegram.org/bot{}/sendMessage'.format(settings.TELEGRAM_TOKEN),
+                                 data={'chat_id': self.chat_id, 'text': text})
+        assert response.status_code == 200

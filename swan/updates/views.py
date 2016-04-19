@@ -23,6 +23,8 @@ def telegram_webhook(request):
     elif 'photo' in update['message']:
         # upload the file to Shreddr
         file_contents = Chat.get_file_contents(update)
-        chat.upload_file(file_contents, file_name=str(update['message']['date']))
-        # TODO: send a message to the user about file upload
+        file_name = str(update['message']['date'])
+        chat.upload_file(file_contents, file_name=file_name)
+        # TODO: send message asynchronously
+        chat.send_message('File successfully uploaded with name "{}".'.format(file_name))
     return HttpResponse()
