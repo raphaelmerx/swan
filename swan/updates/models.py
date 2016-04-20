@@ -66,10 +66,14 @@ class Chat(models.Model):
             self.document_id = document_id
             self.save()
             return True
+        else:
+            return False
 
     def list_documents(self):
         documents_endpoint = 'https://shreddr.captricity.com/api/v1/document'
         response = self.shreddr_session.get(documents_endpoint, data={'active': 'true'})
         documents = json.loads(response.content.decode())
-        documents_repr = ['{}: {}'.format(d['id'], d['name']) for d in documents if d['active']]
+        documents_repr = ['Here are the documents you can associate with your batch:\n']
+        documents_repr.extend(['{}: {}'.format(d['id'], d['name']) for d in documents if d['active']])
+        documents_repr.append('Ex: send "/associate_document 1232" to associate your batch with document 1232')
         return '\n'.join(documents_repr)

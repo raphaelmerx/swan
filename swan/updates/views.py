@@ -38,6 +38,17 @@ def telegram_webhook(request):
                 chat.send_message('Error: {}'.format(error))
         elif message_text.startswith('/documents'):
             chat.send_message(chat.list_documents())
+        elif message_text.startswith('/associate_document '):
+            document_id = message_text.strip('/associate_document ')
+            success = chat.associate_document(document_id)
+            if success:
+                chat.send_message('Successfully associated document {} with batch {}'.format(
+                    chat.document_id, chat.batch_id))
+            else:
+                chat.send_message('Error associating document {} with batch {}'.format(
+                    document_id, chat.batch_id))
+        else:
+            chat.send_message('Unrecognized command. Say what?')
     elif 'photo' in update['message']:
         if not chat.batch_id or not chat.api_token:
             chat.send_message('Please provide a token and a batch ID before sending form images.')
