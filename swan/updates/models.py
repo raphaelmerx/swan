@@ -10,6 +10,7 @@ class Chat(models.Model):
     chat_id = models.IntegerField()
     api_token = models.CharField(max_length=100, null=True)
     batch_id = models.IntegerField(null=True)
+    document_id = models.IntegerField(null=True)
 
     def __repr__(self):
         return str(self.__dict__)
@@ -57,3 +58,18 @@ class Chat(models.Model):
         batch_endpoint = 'https://shreddr.captricity.com/api/v1/batch'
         response = self.shreddr_session.post(batch_endpoint, data={'name': name})
         return response
+
+    def associate_document(self, document_id):
+        batch_endpoint = 'https://shreddr.captricity.com/api/v1/batch/{}'.format(self.batch_id)
+        response = self.shreddr_session.put(batch_endpoint, {'documents': [document_id]})
+        if response.status_code == 200:
+            self.document_id = document_id
+            self.save()
+            return True
+
+    def list_documents(self):
+        documents_endpoint = 'https://shreddr.captricity.com/api/v1/document'
+        response = self.shreddr_session.get(documents_endpoint, data={'active': 'true'})
+        documents = json.loads(response.content.decode())
+        documents_repr = ['{}: {}'.format(d['id'], d['name']) for d in documents if d['active']]
+        return '\n'.join(documents_repr)

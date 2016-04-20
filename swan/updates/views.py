@@ -36,7 +36,8 @@ def telegram_webhook(request):
                 chat.send_message('Batch successfully submitted.')
             else:
                 chat.send_message('Error: {}'.format(error))
-
+        elif message_text.startswith('/documents'):
+            chat.send_message(chat.list_documents())
     elif 'photo' in update['message']:
         if not chat.batch_id or not chat.api_token:
             chat.send_message('Please provide a token and a batch ID before sending form images.')
