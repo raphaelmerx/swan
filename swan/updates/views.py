@@ -24,6 +24,8 @@ def telegram_webhook(request):
             chat.api_token = token
             chat.save()
             chat.send_message('Token saved.')
+        elif message_text == '/start':
+            chat.send_message('hey stranger')
         elif message_text.startswith('/batch '):
             batch_id = message_text.strip('/batch ')
             # TODO: error message if batch id is not an integer
@@ -38,6 +40,8 @@ def telegram_webhook(request):
                 chat.send_message('Error: {}'.format(error))
         elif message_text.startswith('/documents'):
             chat.send_message(chat.list_documents())
+        elif message_text.startswith('/batches'):
+            chat.send_message(chat.list_batches())
         elif message_text.startswith('/associate_document '):
             document_id = message_text.strip('/associate_document ')
             success = chat.associate_document(document_id)
@@ -52,6 +56,7 @@ def telegram_webhook(request):
     elif 'photo' in update['message']:
         if not chat.batch_id or not chat.api_token:
             chat.send_message('Please provide a token and a batch ID before sending form images.')
+            return
         # upload the file to Shreddr
         file_contents = Chat.get_file_contents(update)
         file_name = get_date_isoformat_from_epoch(update['message']['date'])

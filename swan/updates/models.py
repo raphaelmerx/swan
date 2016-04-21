@@ -71,9 +71,21 @@ class Chat(models.Model):
 
     def list_documents(self):
         documents_endpoint = 'https://shreddr.captricity.com/api/v1/document'
-        response = self.shreddr_session.get(documents_endpoint, data={'active': 'true'})
+        response = self.shreddr_session.get(documents_endpoint, params={'active': 'true'})
         documents = json.loads(response.content.decode())
         documents_repr = ['Here are the documents you can associate with your batch:\n']
-        documents_repr.extend(['{}: {}'.format(d['id'], d['name']) for d in documents if d['active']])
-        documents_repr.append('Ex: send "/associate_document 1232" to associate your batch with document 1232')
+        documents_repr.extend(['{}: {}'.format(d['id'], d['name']) for d in documents])
+        documents_repr.append('\nEx: send "/associate_document 1232" to associate your batch with document 1232')
         return '\n'.join(documents_repr)
+
+    def list_batches(self):
+        batch_endpoint = 'https://shreddr.captricity.com/api/v1/batch'
+        response = self.shreddr_session.get(batch_endpoint, params={'status': 'setup'})
+        batches = json.loads(response.content.decode())
+        if not batches:
+            return ('There is no existing batch that you can upload files to.'
+                    'You can create a new batch using the /new_batch command')
+        batches_repr = ['Here are the batches you can upload files to:\n']
+        batches_repr.extend(['{}: {}'.format(b['id'], b['name']) for b in batches])
+        batches_repr.append('\nEx: send "/batch 1232" to start uploading files to batch 1232.')
+        return '\n'.join(batches_repr)
