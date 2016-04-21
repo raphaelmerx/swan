@@ -19,13 +19,18 @@ def telegram_webhook(request):
 
     if 'text' in update['message']:
         message_text = update['message']['text']
-        if message_text.startswith('/token '):
+        if message_text == '/start':
+            chat.send_message('hey stranger')
+        elif message_text.startswith('/token '):
             token = message_text.strip('/token ')
             chat.api_token = token
             chat.save()
             chat.send_message('Token saved.')
-        elif message_text == '/start':
-            chat.send_message('hey stranger')
+        elif message_text.startswith('/new '):
+            batch_name = message_text.strip('/new ')
+            batch_id = chat.create_batch(batch_name)
+            chat.send_message('Sucess! Batch {} created.\n'
+                              'Send "/batch {}" to start uploading files to this batch.'.format(batch_id, batch_id))
         elif message_text.startswith('/batch '):
             batch_id = message_text.strip('/batch ')
             # TODO: error message if batch id is not an integer
@@ -56,10 +61,10 @@ def telegram_webhook(request):
     elif 'photo' in update['message']:
         if not chat.batch_id or not chat.api_token:
             chat.send_message('Please provide a token and a batch ID before sending form images.')
-            return
-        # upload the file to Shreddr
-        file_contents = Chat.get_file_contents(update)
-        file_name = get_date_isoformat_from_epoch(update['message']['date'])
-        chat.upload_file(file_contents, file_name=file_name)
-        chat.send_message('File successfully uploaded with name "{}".'.format(file_name))
+        else:
+            # upload the file to Shreddr
+            file_contents = Chat.get_file_contents(update)
+            file_name = get_date_isoformat_from_epoch(update['message']['date'])
+            chat.upload_file(file_contents, file_name=file_name)
+            chat.send_message('File successfully uploaded with name "{}".'.format(file_name))
     return HttpResponse()
