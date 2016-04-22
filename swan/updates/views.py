@@ -25,22 +25,26 @@ def telegram_webhook(request):
             token = message_text.strip('/token ')
             chat.api_token = token
             chat.save()
-            chat.send_message('Token saved.')
-        elif message_text.startswith('/new '):
-            batch_name = message_text.strip('/new ')
-            batch_id = chat.create_batch(batch_name)
-            chat.send_message('Sucess! Batch {} created.\n'
-                              'Send "/batch {}" to start uploading files to this batch.'.format(batch_id, batch_id))
+            chat.send_message('Success! Token saved.')
+        elif not chat.api_token:
+            chat.send_message('Please provide a token and a batch ID before sending form images.')
         elif message_text.startswith('/batch '):
             batch_id = message_text.strip('/batch ')
             # TODO: error message if batch id is not an integer
             chat.batch_id = int(batch_id)
             chat.save()
-            chat.send_message('Batch ID saved.')
+            chat.send_message('Success! Batch ID saved.')
+        elif message_text.startswith('/new '):
+            batch_name = message_text.strip('/new ')
+            batch_id = chat.create_batch(batch_name)
+            chat.send_message('Sucess! Batch {} created.\n'
+                              'Send "/batch {}" to start uploading files to this batch.'.format(batch_id, batch_id))
         elif message_text.startswith('/submit'):
             success, error = chat.submit_batch()
             if success:
                 chat.send_message('Batch successfully submitted.')
+                chat.batch_id = None
+                chat.save()
             else:
                 chat.send_message('Error: {}'.format(error))
         elif message_text.startswith('/documents'):
