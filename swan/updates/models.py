@@ -57,6 +57,7 @@ class Chat(models.Model):
     def create_batch(self, name):
         batch_endpoint = 'https://shreddr.captricity.com/api/v1/batch'
         response = self.shreddr_session.post(batch_endpoint, data={'name': name})
+        response = self.shreddr_session.post(batch_endpoint, data={'name': name})
         response = json.loads(response.content.decode())
         return response['id']
 
